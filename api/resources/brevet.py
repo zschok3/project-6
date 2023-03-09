@@ -29,16 +29,16 @@ from database.models import Brevet, Checkpoint
 # directly instead of letting Flask-RESTful attempt to convert it to a
 # JSON for you.
 
-class BrevetApi(Resource):
-    def get(self, _id):
-        brevet = Brevet.objects.get(id=_id).tojson()
+class Brevet(Resource):
+    def get(self, id):
+        brevet = Brevet.objects.get(id=id).to_json()
         return Response(brevet, mimetype="application/json", status=200)
     
-    def put(self, _id):
+    def put(self, id):
         req = request.json()
-        Brevet.get(id=_id).update(**req)
+        Brevet.get(id=id).update(**req)
         return '', 200
-        
+
     def delete(self, id):
         Brevet.objects.get(id=id).delete()
         return '', 200

@@ -10,6 +10,7 @@ import arrow  # Replacement for datetime, based on moment.js
 import acp_times  # Brevet time calculations
 import config
 import logging
+import requests 
 
 import os 
 
@@ -30,29 +31,29 @@ def get_brevet():
     """
     Obtains the newest document in the "lists" collection in database
     by calling the RESTful API.
-    Returns title (string) and items (list of dictionaries) as a tuple.
+    Returns:
+        A tuple containing brevet distance(string), begin_date(string), checkpoints(list of dictionaries)
     """
     # Get documents (rows) in our collection (table),
     # Sort by primary key in descending order and limit to 1 document (row)
-    # This will translate into finding the newest inserted document.
-    app.logger.debug("GET_BREVET_CALL")
-    lists = requests.get(f"{API_URL}/brevets").json()
+    # This translates into finding the newest inserted document.
+    brevets = requests.get(f"{API_URL}/brevets").json()
+    brevet = brevets[-1]
+    return brevet["brev_dist"], brevet["begin_date"], brevet["checkpoints"]
 
-    # lists should be a list of dictionaries.
-    # we just need the last one:
-    brevets = lists[-1]
-    return brevets["distance"], brevets["begin_date"], brevets["control_times"]
-
-def insert_brevet(distance, begin_date, control_times):
+def insert_brevet(brev_dist, begin_date, checkpoints):
     """
-    Inserts a new to-do list into the database by calling the API.
-    
-    Inputs a title (string) and items (list of dictionaries)
+    Inserts a new checkpoint list into the database by calling the API.
+    Args:
+        brevet distance: string
+        begin_date: string
+        checkpoints: list of dictionaries
     """
-    _id = requests.post(f"{API_URL}/brevets", json={"distance": distance, "begin_date": begin_date, "control_times": control_times}).json()
+    app.logger.debug("INSERT_BREVET")
+    _id = requests.post(f"{API_URL}/brevets", json={"brev_dist": brev_dist, "begin_date": begin_date, "checkpoints": checkpoints}).json()
+    app.logger.debug(f"ID IS {_id}")
     return _id
  
-
 
 ###
 # Pages
@@ -93,20 +94,11 @@ def _calc_times():
     described at https://rusa.org/octime_alg.html.
     Expects one URL-encoded argument, the number of miles.
     """
-    app.logger.debug("Got a JSON request")
     km = request.args.get('km', 999, type=float)
-    app.logger.debug("km={}".format(km))
-    app.logger.debug("request.args: {}".format(request.args))
-    # FIXME!
-    # Right now, only the current time is passed as the start time
-    # and control distance is fixed to 200
-    # You should get these from the webpage!
-    # control = request.args.get('')
+
     time = request.args.get('begin')
-    app.logger.debug(f"time={time}")
 
     cntrl = request.args.get('cntrl')
-    app.logger.debug(f"cntrl={cntrl}")
 
     open_time = acp_times.open_time(km, cntrl, arrow.get(time)).format('YYYY-MM-DDTHH:mm')
     close_time = acp_times.close_time(km, cntrl, arrow.get(time)).format('YYYY-MM-DDTHH:mm')
@@ -121,38 +113,27 @@ def insert():
     Accepts POST requests ONLY!
     JSON interface: gets JSON, responds with JSON
     """
-    # app.logger.debug(request.json)
     try:
-    # Read the entire request body as a JSON
-    # This will fail if the request body is NOT a JSON.
         input_json = request.json
-        # if successful, input_json is automatically parsed into a python dictionary!
+        app.logger.debug(f"INPUT_JSON: {input_json}")
+        brev_dist = input_json["brev_dist"] 
+        begin_date = input_json["begin_date"] 
+        checkpoints = input_json["checkpoints"] 
+        app.logger.debug({"brev_dist": brev_dist, "begin_date": begin_date, "checkpoints": checkpoints})
+        # Insert brevet data into database
+        brev_id = insert_brevet(brev_dist, begin_date, checkpoints)
 
-        distance = input_json["distance"]
-        begin_date = input_json["begin_date"]
-        control_times = input_json["control_times"]
+        app.logger.debug(f"BREV_ID = {brev_id}")
 
-        app.logger.debug("INSERTING:")
-        app.logger.debug({"distance": distance,
-        "begin_date": begin_date,
-        "control_times": control_times})
-        brevet_id = insert_brevet(distance,begin_date,control_times)
-
-        app.logger.debug(f"BREVET_ID: {brevet_id}")
         return flask.jsonify(result={},
                         message="Inserted!", 
-                        status=1, # This is defined by you. You just read this value in your javascript.
-                        mongo_id=brevet_id)
+                        status=1,
+                        mongo_id=brev_id)
     except:
-        # The reason for the try and except is to ensure Flask responds with a JSON.
-        # If Flask catches your error, it means you didn't catch it yourself,
-        # And Flask, by default, returns the error in an HTML.
-        # We want /insert to respond with a JSON no matter what!
         return flask.jsonify(result={},
-                        message="Oh no! Server error!", 
+                        message="Server error", 
                         status=0, 
                         mongo_id='None')
-
 
 @app.route("/fetch", methods=["GET"])
 def fetch():
@@ -162,27 +143,18 @@ def fetch():
     JSON interface: gets JSON, responds with JSON
     """
     try:
-        distance, begin_date, control_times = get_brevet()
-
-        app.logger.debug("FETCHING:")
-        app.logger.debug({"distance": distance,
-        "begin_date": begin_date,
-        "control_times": control_times})
-
+        # Fetch the newest brevet data from the database
+        brev_dist, begin_date, checkpoints = get_brevet()    
 
         return flask.jsonify(
-                result={
-        "distance": distance,
-        "begin_date": begin_date,
-        "control_times": control_times
-        }, 
+                result={"brev_dist": brev_dist, "begin_date": begin_date, "checkpoints": checkpoints}, 
                 status=1,
-            message="Successfully fetched a to-do list!")
+                message="Successfully fetched brevet data")
     except:
         return flask.jsonify(
                 result={}, 
                 status=0,
-                message="Something went wrong, couldn't fetch any lists!")
+                message="Cannot be fetched")
 
 
 #############

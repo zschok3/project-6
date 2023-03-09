@@ -169,9 +169,9 @@ function createJsonFromTable() {
     controlTimes.push(controlTime);
   });
   var json = {
-    distance: $('#brevet_dist_km').val(),
+    brev_dist: $('#brevet_dist_km').val(),
     begin_date: $('#begin_date').val(),
-    control_times: controlTimes
+    checkpoints: controlTimes
   };
   console.log(json)
 
@@ -222,9 +222,9 @@ function createJsonFromTable() {
                           function(data) {
                              console.log(data);
                              if (data.status == 1) {
-                              var distance = $("#brevet_dist_km").val(data.result.distance);
+                              var brev_dist = $("#brevet_dist_km").val(data.result.brev_dist);
                               var begin_date = $("#begin_date").val(data.result.begin_date);
-                              var control_times = data.result.control_times;
+                              var checkpoints = data.result.checkpoints;
 
                               $('.control').each(function(index) {
                                       console.log("index", index);
@@ -236,11 +236,11 @@ function createJsonFromTable() {
                                       row.find("input[name='open']").val('');
                                       row.find("input[name='close']").val('');
                                       // Check if we're already done?
-                                      console.log(control_times[index].km);
-                                      row.find("input[name='km']").val(control_times[index].km);
-                                      row.find("input[name='miles").val(control_times[index].miles);
-                                      row.find("input[name='open']").val(control_times[index].open);
-                                      row.find("input[name='close']").val(control_times[index].close);
+                                      console.log(checkpoints[index].km);
+                                      row.find("input[name='km']").val(checkpoints[index].km);
+                                      row.find("input[name='miles").val(checkpoints[index].miles);
+                                      row.find("input[name='open']").val(checkpoints[index].open);
+                                      row.find("input[name='close']").val(checkpoints[index].close);
                                   });
                              }
                           });
