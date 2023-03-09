@@ -27,33 +27,16 @@ API_ADDR = os.environ["API_ADDR"]
 API_PORT = os.environ["API_PORT"]
 API_URL = f"http://{API_ADDR}:{API_PORT}/api/"
 
+
 def get_brevet():
-    """
-    Obtains the newest document in the "lists" collection in database
-    by calling the RESTful API.
-    Returns:
-        A tuple containing brevet distance(string), begin_date(string), checkpoints(list of dictionaries)
-    """
-    # Get documents (rows) in our collection (table),
-    # Sort by primary key in descending order and limit to 1 document (row)
-    # This translates into finding the newest inserted document.
-    brevets = requests.get(f"{API_URL}/brevets").json()
-    brevet = brevets[-1]
-    return brevet["brev_dist"], brevet["begin_date"], brevet["checkpoints"]
+    control_lists = requests.get(f"{API_URL}/brevets").json()
+    brevet = control_lists[-1]
+    return brevet["brevet_dist"], brevet["start_time"], brevet["control_list"]
 
 def insert_brevet(brev_dist, begin_date, checkpoints):
-    """
-    Inserts a new checkpoint list into the database by calling the API.
-    Args:
-        brevet distance: string
-        begin_date: string
-        checkpoints: list of dictionaries
-    """
-    app.logger.debug("INSERT_BREVET")
     _id = requests.post(f"{API_URL}/brevets", json={"brev_dist": brev_dist, "begin_date": begin_date, "checkpoints": checkpoints}).json()
-    app.logger.debug(f"ID IS {_id}")
     return _id
- 
+
 
 ###
 # Pages

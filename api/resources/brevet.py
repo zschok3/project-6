@@ -6,7 +6,7 @@ from flask_restful import Resource
 import logging
 
 # You need to implement this in database/models.py
-from database.models import Brevet, Checkpoint
+from database.models import Brevet
 
 # MongoEngine queries:
 # Brevet.objects() : similar to find_all. Returns a MongoEngine query
@@ -30,17 +30,19 @@ from database.models import Brevet, Checkpoint
 # JSON for you.
 
 class Brevet(Resource):
+    #GET: finds the document with the given id from the collection
     def get(self, id):
-        brevet = Brevet.objects.get(id=id).to_json()
-        return Response(brevet, mimetype="application/json", status=200)
+        brevet = Brevet.object.get(id=id).to_json()
+        return Response(brevet, mimetype = "application/json", status=200)
     
+    #PUT: updates the document with the given id based on the fields in the request
     def put(self, id):
-        req = request.json()
-        Brevet.get(id=id).update(**req)
+        input_json = request.json
+        Brevet.object.get(id=id).update(**input_json)
         return '', 200
-
+    
+    #DELETE: deletes the document with the given id from the collection
     def delete(self, id):
-        Brevet.objects.get(id=id).delete()
+        Brevet.object.get(id=id).delete()
         return '', 200
-
     

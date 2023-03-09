@@ -30,11 +30,13 @@ from database.models import Brevet
 # JSON for you.
 
 class Brevets(Resource):
+     #GET: finds ALL brevets in the collection, returns them
     def get(self):
         json_object = Brevet.objects().to_json()
         return Response(json_object, mimetype="application/json", status=200)
-
+    
+    #POST: inserts a new brevet into the collection based on the fields in the request
     def post(self):
-        input_json = request.json
-        result = Brevet(**input_json).save()
+        body = request.json
+        result = Brevet(**body).save()
         return {'_id': str(result.id)}, 200
