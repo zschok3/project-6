@@ -150,104 +150,122 @@
                });
             }
 
-            $(document).ready(function(){
-             // Do the following when the page is finished loading
+             // Do the following when the page is finished loadi
 
+             $('#submit').click(
+                  function(event){
+                    event.preventDefault();
+                    var brevet_dist = $("#brevet_dist_km").val();
+	                 console.log("brevet_dist" + brevet_dist);
+	                 var start_time = $("#begin_date").val();
+	                 console.log("start_time" + start_time);
+	                 var checkpoints = [];
+	                 $('.control').each(function(){
+	                    //find the row
+	                    var control_l = $(this);
+	                    var miles = control_l.find("input[name='miles']").val();
+	                    var km = control_l.find("input[name='km']").val();
+	                    var location = control_l.find("input[name='location']").val();
+	                    var open = control_l.find("input[name='open']").val();
+	                    var close= control_l.find("input[name='close']").val();
+	                    //if not empty, append to our list
+	                    if(km){
+	                       control_l_json = {
+	                             "miles": miles,
+	                             "km": km,
+	                             "location": location,
+	                             "open": open,
+	                             "close": close
+	                             }
+	                             checkpoints.push(control_l_json);
+	                       }
+	                    });
+	                    //construct the data we will be sending flask
+	                    var new_control_list = {
+	                       "brev_dist": brevet_dist,
+	                       "begin_date": start_time,
+	                       "checkpoints": checkpoints};
+	                    //move data to backend via ajax
+	                    $.ajax({
+	                       // Expect JSON responses from our backend
+	                       dataType: 'json',
+	                       // Specify we're sending JSON as well:
+	                       contentType: "application/json",
+	                       // Request method: POST
+                           type: 'POST',
+                           // URL: specified above
+                           url: SAVE_URL,
+                           // Important step that we didn't use to do in P4:
+                          // Convert our constructed dictionary to a JSON string!
+                          data: JSON.stringify(new_control_list),
+                          // On a successful response from flask:
+                          success: function(data) {
+                              // Check the status code we set in Flask
+                              // Recall: 1 was success, 0 was failure
+                              if (data.status == 1) {
+                                  console.log("Successfully inserted! Response: ", data);
+                              }
+                              else {
+                                  console.log("Insertion failed: ", data);
+                              }
+                           },
+                          // On error
+                          error: function(err){
+                           console.log("Error: ", err); }
+                        });
+                    }
+                );
 
-
-
-function createJsonFromTable() {
-  var controlTimes = [];
-  $('.control').each(function() {
-    var controlTime = {};
-    controlTime.miles = $(this).find('input[name="miles"]').val();
-    controlTime.km = $(this).find('input[name="km"]').val();
-    controlTime.location = $(this).find('input[name="location"]').val();
-    controlTime.open = $(this).find('input[name="open"]').val();
-    controlTime.close = $(this).find('input[name="close"]').val();
-    controlTime.notes = $(this).find('input[name="notes"]').val();
-    controlTimes.push(controlTime);
-  });
-  var json = {
-    brev_dist: $('#brevet_dist_km').val(),
-    begin_date: $('#begin_date').val(),
-    checkpoints: controlTimes
-  };
-  console.log(json)
-
-  $.ajax({
-       // Expect JSON responses from our backend
-      dataType: 'json', // expected output format (getJSON sets this as well)
-      // Specify we're sending JSON as well
-      contentType: "application/json",
-       // Request method: POST
-      type: 'POST',
-      // URL: specified above
-      url: SAVE_URL,
-      // Important step that we didn't use to do in P4:
-      // Convert our constructed dictionary to a JSON string!
-         data: JSON.stringify(json),
-      // On a successful response from flask:
-      success: function(data) {
-      // Check the status code we set in Flask
-         // Recall: 1 was success, 0 was failure
-      if (data.status == 1) {
-         console.log("Successfully inserted! Response: ", data);
-      }
-      else {
-      console.log("Insertion failed: ", data);
-         }
-      },
-      // On error
-      error: function(err){
-      console.log("Error: ", err); }
-});
-
-  return json;
-}
-
-         // couldn't get formatting of $(#submit).click down so used this from W3Schools
-         document.querySelector('#submit').addEventListener('click', createJsonFromTable);
-
-
-         $('#display').click(
+               $('#display').click(
                     function(event) {
                         event.preventDefault();
                         // We use getJSON because we're sending a GET request.
                         // getJSON is essentially running $.ajax as well, but sets the defaults for us.
                         // So we're just using it for convenience.
                         // Feel free to replace it with a $.ajax call like the one in #insert.
-                        console.log("LOOKING FOR DATA:")
                         $.getJSON(GET_URL /* Send no data */).done(
                           function(data) {
                              console.log(data);
-                             if (data.status == 1) {
-                              var brev_dist = $("#brevet_dist_km").val(data.result.brev_dist);
-                              var begin_date = $("#begin_date").val(data.result.begin_date);
-                              var checkpoints = data.result.checkpoints;
+                              if (data.status == 1) {
+                                  $("#brevet_dist_km").val(data.result.brev_dist);
+                                  $("#begin_date").val(data.result.begin_date);
+                                  var control_list = data.result.checkpoints;
+                                  // We need to know how many items are in the fetched list
+                                  var num_items = control_list.length;
+                                  var current_cl = $('.control').length;
+      
 
-                              $('.control').each(function(index) {
-                                      console.log("index", index);
-                                      var row = $(this); // This is our row
-                                      console.log(row);
+                                  // For each row in the HTML table
+                                  $('.control').each(function(index) {
+                                      var control = $(this); // This is our row
                                       // Clear existing values
-                                      row.find("input[name='km']").val('');
-                                      row.find("input[name='miles']").val('');
-                                      row.find("input[name='open']").val('');
-                                      row.find("input[name='close']").val('');
+                                      control.find("input[name='miles']").val('');
+                                      control.find("input[name='km']").val('');
+                                      control.find("input[name='location']").val('');
+                                      control.find("input[name='open']").val('');
+                                      control.find("input[name='close']").val('');
                                       // Check if we're already done?
-                                      console.log(checkpoints[index].km);
-                                      row.find("input[name='km']").val(checkpoints[index].km);
-                                      row.find("input[name='miles").val(checkpoints[index].miles);
-                                      row.find("input[name='open']").val(checkpoints[index].open);
-                                      row.find("input[name='close']").val(checkpoints[index].close);
+                                      if (index < num_items) {
+                                          control.find("input[name='miles']").val(control_list[index].miles);
+                                          control.find("input[name='km']").val(control_list[index].km);
+                                          control.find("input[name='locaction']").val(control_list[index].location);
+                                          control.find("input[name='open']").val(control_list[index].open);
+                                          control.find("input[name='close']").val(control_list[index].close);
+                                      }
                                   });
-                             }
-                          });
-                        }
-         );
+                              }
+                              else {
+                                  console.log("Fetch failed: ", data);
+                              }
+                           }
+                         ).fail(function(err){
+                           // In case you get an error...
+                           console.log("Error: ", err);
+                         });
+                    }
+                );
 
-
+          $(document).ready(function(){
          $('input[name="miles"]').change(
                    function() {
                        var miles = parseFloat($(this).val());

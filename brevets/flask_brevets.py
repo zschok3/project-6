@@ -31,7 +31,9 @@ API_URL = f"http://{API_ADDR}:{API_PORT}/api/"
 def get_brevet():
     control_lists = requests.get(f"{API_URL}/brevets").json()
     brevet = control_lists[-1]
-    return brevet["brevet_dist"], brevet["start_time"], brevet["control_list"]
+    app.logger.debug("BREVET")
+    app.logger.debug(brevet)
+    return brevet["brev_dist"], brevet["begin_date"], brevet["checkpoints"]
 
 def insert_brevet(brev_dist, begin_date, checkpoints):
     _id = requests.post(f"{API_URL}/brevets", json={"brev_dist": brev_dist, "begin_date": begin_date, "checkpoints": checkpoints}).json()
@@ -125,19 +127,22 @@ def fetch():
     Accepts GET requests ONLY!
     JSON interface: gets JSON, responds with JSON
     """
-    try:
+    # try:
         # Fetch the newest brevet data from the database
-        brev_dist, begin_date, checkpoints = get_brevet()    
+    brev_dist, begin_date, checkpoints = get_brevet() 
+    app.logger.debug(f"BREV_DIST: {brev_dist}")   
+    app.logger.debug(f"BEGIN+DATE: {begin_date}")   
+    app.logger.debug(f"CHECKPOINTS: {checkpoints}")   
 
-        return flask.jsonify(
-                result={"brev_dist": brev_dist, "begin_date": begin_date, "checkpoints": checkpoints}, 
-                status=1,
-                message="Successfully fetched brevet data")
-    except:
-        return flask.jsonify(
-                result={}, 
-                status=0,
-                message="Cannot be fetched")
+    return flask.jsonify(
+            result={"brev_dist": brev_dist, "begin_date": begin_date, "checkpoints": checkpoints}, 
+            status=1,
+            message="Successfully fetched brevet data")
+    # except:
+    #     return flask.jsonify(
+    #             result={}, 
+    #             status=0,
+    #             message="Cannot be fetched")
 
 
 #############
