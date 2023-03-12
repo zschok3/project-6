@@ -155,10 +155,8 @@
              $('#submit').click(
                   function(event){
                     event.preventDefault();
-                    var brevet_dist = $("#brevet_dist_km").val();
-	                 console.log("brevet_dist" + brevet_dist);
+                    var brev_dist = $("#brevet_dist_km").val();
 	                 var start_time = $("#begin_date").val();
-	                 console.log("start_time" + start_time);
 	                 var checkpoints = [];
 	                 $('.control').each(function(){
 	                    //find the row
@@ -170,19 +168,19 @@
 	                    var close= control_l.find("input[name='close']").val();
 	                    //if not empty, append to our list
 	                    if(km){
-	                       control_l_json = {
+	                       control_json = {
 	                             "miles": miles,
 	                             "km": km,
 	                             "location": location,
 	                             "open": open,
 	                             "close": close
 	                             }
-	                             checkpoints.push(control_l_json);
+	                             checkpoints.push(control_json);
 	                       }
 	                    });
 	                    //construct the data we will be sending flask
 	                    var new_control_list = {
-	                       "brev_dist": brevet_dist,
+	                       "brev_dist": brev_dist,
 	                       "begin_date": start_time,
 	                       "checkpoints": checkpoints};
 	                    //move data to backend via ajax
@@ -204,6 +202,15 @@
                               // Recall: 1 was success, 0 was failure
                               if (data.status == 1) {
                                   console.log("Successfully inserted! Response: ", data);
+                                  $('.control').each(function(index) {
+                                      var control = $(this); // This is our row
+                                      // Clear existing values
+                                      control.find("input[name='miles']").val('');
+                                      control.find("input[name='km']").val('');
+                                      control.find("input[name='location']").val('');
+                                      control.find("input[name='open']").val('');
+                                      control.find("input[name='close']").val('');
+                                  });  
                               }
                               else {
                                   console.log("Insertion failed: ", data);
