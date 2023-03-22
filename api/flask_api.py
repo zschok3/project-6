@@ -5,8 +5,8 @@ import os
 from flask import Flask
 from flask_restful import Api
 from mongoengine import connect
-from resources.brevet import BrevetApi
-from resources.brevets import BrevetsApi
+from resources.brevet import BrevetResource
+from resources.brevets import BrevetsResource
 import logging
 #
 # Connect MongoEngine to mongodb
@@ -21,8 +21,8 @@ api = Api(app)
 #
 # Bind resources to paths here:
 # api.add_resource(...)
-api.add_resource(BrevetApi, "/api/brevet/<id>")
-api.add_resource(BrevetsApi, "/api/brevets")
+api.add_resource(BrevetResource, "/api/brevet/<id>")
+api.add_resource(BrevetsResource, "/api/brevets")
 
 if __name__ == "__main__":
     # Run flask app normally

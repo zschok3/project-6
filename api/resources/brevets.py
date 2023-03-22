@@ -29,7 +29,7 @@ from database.models import Brevet
 # directly instead of letting Flask-RESTful attempt to convert it to a
 # JSON for you.
 
-class BrevetsApi(Resource):
+class BrevetsResource(Resource):
      #GET: finds ALL brevets in the collection, returns them
     def get(self):
         json_object = Brevet.objects().to_json()
