@@ -32,7 +32,7 @@ from database.models import Brevet
 class BrevetResource(Resource):
     #GET: finds the document with the given id from the collection
     def get(self, id):
-        brevet = Brevet.object.get(id=id).to_json()
+        brevet = Brevet.objects.get(id=id).to_json()
         return Response(brevet, mimetype = "application/json", status=200)
     
     #PUT: updates the document with the given id based on the fields in the request
