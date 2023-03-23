@@ -1,4 +1,13 @@
 # UOCIS322 - Project 6 #
+Kyle Zschokke 
+kzschok3@uoregon.edu 
+
+
+In this project we updated our work in project 3-5 to include a callable API connected to a Mongo DB.  We now have 3 different systems operating in our Mongo container, a MongoDB powered by Mongo Engine, a webpage and a RESTful API, both of which are powered by flask.  It's the same as project-5, except now submit and display functionality calls the API.
+
+
+
+
 Brevet time calculator with MongoDB, and a RESTful API!
 
 Read about MongoEngine and Flask-RESTful before you start: [http://docs.mongoengine.org/](http://docs.mongoengine.org/), [https://flask-restful.readthedocs.io/en/latest/](https://flask-restful.readthedocs.io/en/latest/).
